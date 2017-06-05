@@ -4,7 +4,8 @@ apply plugin: 'maven'
 group = 'com.github.kzhu-bstar'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile files('libs/tools.jar')
 }
 
 sourceCompatibility = "1.7"
@@ -14,4 +15,9 @@ dependencies {
     compile project(':zeus-annotations')
     compile rootProject.ext.autoservice
     compile rootProject.ext.javapoet
+
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }

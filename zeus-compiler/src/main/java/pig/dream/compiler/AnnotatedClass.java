@@ -27,7 +27,9 @@ import javax.lang.model.util.Elements;
  */
 public class AnnotatedClass {
 
-    /** Core接口所在的包名 */
+    /**
+     * Core接口所在的包名
+     */
     private static final String CORE_PACKAGE_NAME = "freelifer.zeus.mjollnir.inject";
 
     private Messager messager;

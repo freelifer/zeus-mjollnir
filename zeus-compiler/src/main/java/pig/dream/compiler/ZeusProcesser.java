@@ -20,6 +20,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 
+import freelifer.zeus.mjollnir.annotations.Module;
+import freelifer.zeus.mjollnir.annotations.Provides;
 import pig.dream.annotations.BindIntent;
 import pig.dream.annotations.BindView;
 import pig.dream.annotations.RouterActivity;
@@ -35,8 +37,9 @@ public class ZeusProcesser extends AbstractProcessor {
     private Elements elementUtils; //元素相关的辅助类
     private Messager messager;
 
-    private Map<String, AnnotatedClass> mAnnotatedClassMap = new HashMap<>();
-    private Map<String, RouteActivityField> mRouteActivityMap = new HashMap<>();
+    private Map<String, AnnotatedClass> annotatedClassMap = new HashMap<>();
+    private Map<String, RouteActivityField> routeActivityMap = new HashMap<>();
+    private Map<String, ModuleField> moduleFieldMap = new HashMap<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -55,6 +58,7 @@ public class ZeusProcesser extends AbstractProcessor {
         types.add(BindView.class.getCanonicalName());
         types.add(RouterActivity.class.getCanonicalName());
         types.add(BindIntent.class.getCanonicalName());
+        types.add(Module.class.getCanonicalName());
         return types;
     }
 
@@ -66,8 +70,10 @@ public class ZeusProcesser extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         // process() will be called several times
-        mAnnotatedClassMap.clear();
-        mRouteActivityMap.clear();
+        annotatedClassMap.clear();
+        routeActivityMap.clear();
+        moduleFieldMap.clear();
+        typeElement = null;
 
         messager.printMessage(Diagnostic.Kind.NOTE, "Printing: 111");
         for (TypeElement te : annotations) {
@@ -80,6 +86,8 @@ public class ZeusProcesser extends AbstractProcessor {
             processBindView(roundEnv);
             processBindIntent(roundEnv);
             processRouteActivity(roundEnv);
+            processModule(roundEnv);
+            processProvide(roundEnv);
         } catch (IllegalArgumentException e) {
             messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage());
             return true; // stop process
@@ -87,12 +95,12 @@ public class ZeusProcesser extends AbstractProcessor {
 
         generateBinder();
         generateRouteActivity();
-
+        generateModules();
         return true;
     }
 
     private void generateBinder() {
-        for (AnnotatedClass annotatedClass : mAnnotatedClassMap.values()) {
+        for (AnnotatedClass annotatedClass : annotatedClassMap.values()) {
             try {
                 annotatedClass.generateActivityCoreClass().writeTo(filer);
             } catch (IOException e) {
@@ -102,11 +110,25 @@ public class ZeusProcesser extends AbstractProcessor {
     }
 
     private void generateRouteActivity() {
-        if (mRouteActivityMap.size() <= 0) {
+        if (routeActivityMap.size() <= 0) {
             return;
         }
         try {
-            RouterAnnotatedClass.generateRouteActivityClass(mAnnotatedClassMap, mRouteActivityMap).writeTo(filer);
+            RouterAnnotatedClass.generateRouteActivityClass(annotatedClassMap, routeActivityMap).writeTo(filer);
+        } catch (IOException e) {
+            messager.printMessage(Diagnostic.Kind.ERROR, "Generate file failed, reason: " + e.getMessage());
+        }
+    }
+
+    private void generateModules() {
+        if (typeElement == null || moduleFieldMap.size() == 0) {
+            return;
+        }
+        try {
+            ModuleAnnotatedClass.generateModulsClass(typeElement, elementUtils).writeTo(filer);
+            for (Map.Entry<String, ModuleField> moduleField: moduleFieldMap.entrySet()) {
+                ModuleAnnotatedClass.create(moduleField.getValue()).generateProvidesClass(elementUtils, filer);
+            }
         } catch (IOException e) {
             messager.printMessage(Diagnostic.Kind.ERROR, "Generate file failed, reason: " + e.getMessage());
         }
@@ -133,26 +155,64 @@ public class ZeusProcesser extends AbstractProcessor {
             RouteActivityField routeActivityField = new RouteActivityField(element);
             String fullClassName = routeActivityField.getFullClassName();
             messager.printMessage(Diagnostic.Kind.NOTE, "RouteActivity " + fullClassName);
-            if (!mRouteActivityMap.containsKey(fullClassName)) {
-                mRouteActivityMap.put(fullClassName, routeActivityField);
+            if (!routeActivityMap.containsKey(fullClassName)) {
+                routeActivityMap.put(fullClassName, routeActivityField);
             }
         }
+    }
 
+    private TypeElement typeElement;
+
+    private void processModule(RoundEnvironment roundEnv) throws IllegalArgumentException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Module.class)) {
+            TypeElement typeElement = (TypeElement) element;
+            this.typeElement = typeElement;
+            String fullClassName = typeElement.getQualifiedName().toString();
+            ModuleField moduleField = moduleFieldMap.get(fullClassName);
+            if (moduleField == null) {
+                moduleField = new ModuleField(typeElement, elementUtils);
+                moduleFieldMap.put(fullClassName, moduleField);
+            }
+        }
+    }
+
+    private void processProvide(RoundEnvironment roundEnv) throws IllegalArgumentException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Provides.class)) {
+            ProvideField.create(element).println(messager);
+            ModuleField moduleField = getModuleField(element);
+
+            if (moduleField == null) {
+                error("Annotated Provides can not use alone");
+                continue;
+            }
+            moduleField.addProvide(element);
+        }
     }
 
     private AnnotatedClass getAnnotatedClass(Element element) {
         TypeElement classElement = (TypeElement) element.getEnclosingElement();
         String fullClassName = classElement.getQualifiedName().toString();
         messager.printMessage(Diagnostic.Kind.NOTE, "Printing fullClassName: " + fullClassName + " type " + classElement.toString());
-        AnnotatedClass annotatedClass = mAnnotatedClassMap.get(fullClassName);
+        AnnotatedClass annotatedClass = annotatedClassMap.get(fullClassName);
         if (annotatedClass == null) {
             annotatedClass = new AnnotatedClass(classElement, elementUtils, messager);
-            mAnnotatedClassMap.put(fullClassName, annotatedClass);
+            annotatedClassMap.put(fullClassName, annotatedClass);
         }
         return annotatedClass;
     }
 
+    private ModuleField getModuleField(Element element) {
+        TypeElement classElement = (TypeElement) element.getEnclosingElement();
+        String fullClassName = classElement.getQualifiedName().toString();
+        return moduleFieldMap.get(fullClassName);
+    }
+
     private void error(String format, Object... args) {
         messager.printMessage(Diagnostic.Kind.ERROR, String.format(format, args));
+    }
+
+    private void i(String format, Object... args) {
+        messager.printMessage(Diagnostic.Kind.NOTE, String.format(format, args));
+
     }
 }

@@ -6,7 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import freelifer.zeus.mjollnir.Mjollnir;
-import freelifer.zeus.mjollnir.annotations.Inject;
+import freelifer.zeus.mjollnir.annotations.BindTarget;
 import pig.dream.annotations.BindView;
 
 public class MainActivity extends AppCompatActivity {
@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.all)
     TextView tv;
 
-    @Inject
+    @BindTarget
     Application application;
 
     @Override
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        MjollnirAppModule.builder().appModule(new AppModule(getApplication())).build();
         Mjollnir.bind(this);
     }
 }

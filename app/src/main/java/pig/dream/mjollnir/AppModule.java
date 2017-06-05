@@ -17,7 +17,7 @@ public class AppModule {
     }
 
     @Provides
-    public Application getApplication() {
+    public Application provideValidator() {
         return this.application;
     }
 }
