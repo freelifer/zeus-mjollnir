@@ -1,4 +1,4 @@
-package pig.dream.annotations;
+package freelifer.zeus.mjollnir.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

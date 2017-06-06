@@ -5,30 +5,23 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import freelifer.zeus.mjollnir.annotations.BindIntent;
-import freelifer.zeus.mjollnir.annotations.BindView;
+import freelifer.zeus.mjollnir.annotations.BindTarget;
 
 /**
  * @author zhukun on 2017/4/15.
  */
 
-public class BindIntentField {
+public class BindTargetField {
     private VariableElement mFieldElement;
-    private String value;
 
-    public BindIntentField(Element element) throws IllegalArgumentException {
+    public BindTargetField(Element element) throws IllegalArgumentException {
         if (element.getKind() != ElementKind.FIELD) {
             throw new IllegalArgumentException(
-                    String.format("Only fields can be annotated with @%s", BindView.class.getSimpleName()));
+                    String.format("Only fields can be annotated with @%s", BindTarget.class.getSimpleName()));
         }
 
         mFieldElement = (VariableElement) element;
-        BindIntent bindIntent = mFieldElement.getAnnotation(BindIntent.class);
-        value = bindIntent.value();
-    }
-
-    public VariableElement getFieldElement() {
-        return mFieldElement;
+        BindTarget bindTarget = mFieldElement.getAnnotation(BindTarget.class);
     }
 
     public String getFieldName() {
@@ -37,9 +30,5 @@ public class BindIntentField {
 
     public TypeMirror getFieldType() {
         return mFieldElement.asType();
-    }
-
-    public String getValue() {
-        return value;
     }
 }

@@ -22,6 +22,11 @@ public class Mjollnir {
     private static final Map<String, Core> FINDER_MAP = new HashMap<>();
 
     @NonNull
+    public static void bind(@NonNull Object target) {
+        createBinding(target, null);
+    }
+
+    @NonNull
     public static void bind(@NonNull Activity target) {
         View sourceView = target.getWindow().getDecorView();
         createBinding(target, sourceView);

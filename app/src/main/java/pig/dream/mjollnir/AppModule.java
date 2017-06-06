@@ -10,14 +10,19 @@ import freelifer.zeus.mjollnir.annotations.Provides;
  */
 @Module
 public class AppModule {
-    private Application application;
+    private App app;
 
-    public AppModule(Application application) {
-        this.application = application;
+    public AppModule(App app) {
+        this.app = app;
     }
 
     @Provides
-    public Application provideValidator() {
-        return this.application;
+    public App provideApp() {
+        return this.app;
+    }
+
+    @Provides
+    public Application provideApplication() {
+        return this.app;
     }
 }

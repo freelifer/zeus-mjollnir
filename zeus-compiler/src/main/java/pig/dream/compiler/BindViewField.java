@@ -5,7 +5,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import pig.dream.annotations.BindView;
+import freelifer.zeus.mjollnir.annotations.BindView;
 
 /**
  * @author zhukun on 2017/4/15.

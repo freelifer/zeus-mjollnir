@@ -18,7 +18,7 @@ public class RouterAnnotatedClass {
 
     private static final String packageName = "pig.dream.zeuslibs.router";
 
-    public static JavaFile generateRouteActivityClass(Map<String, AnnotatedClass> annotatedClassMap, Map<String, RouteActivityField> routeActivityMap) {
+    public static JavaFile generateRouteActivityClass(Map<String, BindAnnotatedClass> bindAnnotatedClassMap, Map<String, RouteActivityField> routeActivityMap) {
 
         ParameterizedTypeName p = ParameterizedTypeName.get(ClassName.get("java.util", "Map"), ClassName.get(String.class), ClassName.get(packageName,"RouteMeta"));
         MethodSpec.Builder loadIntoMethodBuilder = MethodSpec.methodBuilder("loadInto")

@@ -8,7 +8,7 @@ import javax.tools.Diagnostic;
  */
 public class Logger {
 
-    private static final boolean DBG = false;
+    private static final boolean DBG = true;
 
     public static void i(Messager messager, String format, Object... args) {
         if (!DBG) {

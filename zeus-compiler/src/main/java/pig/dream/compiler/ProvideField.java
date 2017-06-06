@@ -22,6 +22,10 @@ public class ProvideField {
         return provideField;
     }
 
+    public Element getElement() {
+        return element;
+    }
+
     public TypeElement getFatherElement() {
         return (TypeElement) element.getEnclosingElement();
     }
@@ -45,8 +49,9 @@ public class ProvideField {
         return methodType.getReturnType().toString();
     }
 
-    public void println(Messager messager) {
+    public ProvideField println(Messager messager) {
         messager.printMessage(Diagnostic.Kind.NOTE, String.format("Element 父级类名%s, 全路径%s, 方法名%s, 未知%s",
                 getFatherSimpleName(), getFatherQualifiedName(), getSimpleName(), getReturnType()));
+        return this;
     }
 }

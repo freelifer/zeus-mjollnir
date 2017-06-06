@@ -3,7 +3,7 @@ package pig.dream.compiler;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import pig.dream.annotations.RouterActivity;
+import freelifer.zeus.mjollnir.annotations.RouterActivity;
 
 /**
  * @author zhukun on 2017/5/16.

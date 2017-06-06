@@ -3,7 +3,6 @@ package pig.dream.compiler;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 
@@ -14,7 +13,7 @@ public class ModuleField {
 
     private Elements elements;
     private TypeElement typeElement;
-    private List<Element> provides;
+    private List<ProvideField> provides;
 
     public ModuleField(TypeElement typeElement, Elements elementUtils) {
         this.elements = elementUtils;
@@ -22,11 +21,11 @@ public class ModuleField {
         provides = new ArrayList<>();
     }
 
-    public void addProvide(Element element) {
+    public void addProvide(ProvideField element) {
         provides.add(element);
     }
 
-    public List<Element> getProvides() {
+    public List<ProvideField> getProvides() {
         return provides;
     }
 

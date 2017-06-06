@@ -10,13 +10,11 @@ import com.squareup.javapoet.TypeSpec;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.processing.Messager;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 
 /**
  * 注解生成类 实现freelifer.zeus.mjollnir.inject.Core接口
@@ -25,24 +23,33 @@ import javax.lang.model.util.Elements;
  * @author zhukun on 2017/4/15.
  * @version 1.0
  */
-public class AnnotatedClass {
-
+public class BindAnnotatedClass {
     /**
      * Core接口所在的包名
      */
     private static final String CORE_PACKAGE_NAME = "freelifer.zeus.mjollnir.inject";
 
-    private Messager messager;
-    public Elements elementUtils;
+    protected ProcessorHelper processorHelper;
 
+    /**
+     * 注解所在的类 如MainActivity
+     */
     public TypeElement classElement;
+
     private List<BindViewField> bindViewFields;
     private List<BindIntentField> bindIntentFields;
+    private List<BindTargetField> bindTargetFields;
 
-    public AnnotatedClass(TypeElement classElement, Elements elementUtils, Messager messager) {
-        this.messager = messager;
+    private BindAnnotatedClass(TypeElement classElement, ProcessorHelper processorHelper) {
         this.classElement = classElement;
-        this.elementUtils = elementUtils;
+        this.processorHelper = processorHelper;
+        this.bindViewFields = new ArrayList<>();
+        this.bindIntentFields = new ArrayList<>();
+        this.bindTargetFields = new ArrayList<>();
+    }
+
+    public static BindAnnotatedClass create(TypeElement classElement, ProcessorHelper processorHelper) {
+        return new BindAnnotatedClass(classElement, processorHelper);
     }
 
     // omit some easy methods
@@ -62,6 +69,13 @@ public class AnnotatedClass {
                         ClassName.get(field.getFieldType()), field.getResId());
             }
         }
+
+        // module inject
+        if (bindTargetFields != null && bindTargetFields.size() != 0) {
+            injectMethodBuilder.addStatement(ModuleAnnotatedClass.MjollnirAppModule +
+                    ".instance().create$N_MembersInjector().injectMembers(host)", classElement.getSimpleName());
+        }
+
         // method  void parseIntent(T host, Bundle savedInstanceState, Intent intent);
         MethodSpec.Builder parseIntentBuilder = MethodSpec.methodBuilder("parseIntent")
                 .addModifiers(Modifier.PUBLIC)
@@ -107,7 +121,7 @@ public class AnnotatedClass {
                 .addMethod(saveInstanceStateBuilder.build())
                 .build();
 
-        String packageName = elementUtils.getPackageOf(classElement).getQualifiedName().toString();
+        String packageName = processorHelper.getPackageOf(classElement);
         // generate file
         return JavaFile.builder(packageName, finderClass).build();
     }
@@ -194,17 +208,18 @@ public class AnnotatedClass {
     }
 
     public void addBindViewField(BindViewField bindViewField) {
-        if (bindViewFields == null) {
-            bindViewFields = new ArrayList<>();
-        }
         bindViewFields.add(bindViewField);
     }
 
     public void addBindIntentField(BindIntentField bindIntentField) {
-        if (bindIntentFields == null) {
-            bindIntentFields = new ArrayList<>();
-        }
         bindIntentFields.add(bindIntentField);
     }
 
+    public void addBindTargetField(BindTargetField bindTargetField) {
+        bindTargetFields.add(bindTargetField);
+    }
+
+    public List<BindTargetField> getBindTargetFields() {
+        return bindTargetFields;
+    }
 }
