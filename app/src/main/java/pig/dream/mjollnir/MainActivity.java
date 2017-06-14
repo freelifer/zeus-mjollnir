@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import freelifer.zeus.mjollnir.Mjollnir;
+import freelifer.zeus.mjollnir.annotations.BindIntent;
 import freelifer.zeus.mjollnir.annotations.BindTarget;
 import freelifer.zeus.mjollnir.annotations.BindView;
 
@@ -19,6 +20,12 @@ public class MainActivity extends AppCompatActivity {
 
     @BindTarget
     Application application01;
+
+    @BindIntent
+    int id1;
+
+    @BindIntent
+    String aa1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

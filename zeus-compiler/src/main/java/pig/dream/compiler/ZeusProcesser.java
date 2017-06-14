@@ -145,7 +145,9 @@ public class ZeusProcesser extends AbstractProcessor {
     private void processBindIntent(RoundEnvironment roundEnv) throws IllegalArgumentException {
         for (Element element : roundEnv.getElementsAnnotatedWith(BindIntent.class)) {
             BindAnnotatedClass bindAnnotatedClass = getAnnotatedClass(element);
-            BindIntentField field = new BindIntentField(element);
+            TypeElement classElement = (TypeElement) element.getEnclosingElement();
+            String simpleName = classElement.getSimpleName().toString();
+            BindIntentField field = new BindIntentField(element, simpleName);
             bindAnnotatedClass.addBindIntentField(field);
         }
     }

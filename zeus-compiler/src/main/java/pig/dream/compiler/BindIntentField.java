@@ -16,7 +16,7 @@ public class BindIntentField {
     private VariableElement mFieldElement;
     private String value;
 
-    public BindIntentField(Element element) throws IllegalArgumentException {
+    public BindIntentField(Element element, String simpleName) throws IllegalArgumentException {
         if (element.getKind() != ElementKind.FIELD) {
             throw new IllegalArgumentException(
                     String.format("Only fields can be annotated with @%s", BindView.class.getSimpleName()));
@@ -25,6 +25,9 @@ public class BindIntentField {
         mFieldElement = (VariableElement) element;
         BindIntent bindIntent = mFieldElement.getAnnotation(BindIntent.class);
         value = bindIntent.value();
+        if (Utils.isEmpty(value)) {
+            value = simpleName + "_" + Utils.getSimpleName(mFieldElement.asType().toString());
+        }
     }
 
     public VariableElement getFieldElement() {
